@@ -1,0 +1,102 @@
+---
+title: "Machine Learning Assignment"
+author: "Anahita Saghafi"
+date: "Thursday, August 21, 2014"
+output: html_document
+---
+# Course Project - Practical Machine Learning
+
+## Introduction 
+
+AS per course project "Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har"
+
+In prediction the most important job is to have a well defined question, then collect the best input data, find features, define algorithm, parameters and perform evaluation.
+
+In this work we would like to use the data collected from accelerometers on the belt, forearm, arm, and dumbell in 6 participants who have done these activities in 5 different ways. The goal is to predict the manner in which an activity is performed using the 'classes' variable in the training set.
+
+
+
+## Summary of the work 
+
+Using training and test data as obtained from http://groupware.les.inf.puc-rio.br/har,   a model is built by using only the training data first. To perform the required model fitting and prediction, a data cleansing is performed first, where the columns of data with mostly blank or NA are removed, as well as columns which are not related to the prediction. 
+
+The final training data set has 53 columns where 'classe' which we care about for prediction is at column 53. A model is build using this clean data set and cross validation is explained along with expected out of error sample and the choice of model fit.
+
+Finally the test data is cleaned in the same manner as training data and the model is applied to 20 test cases.
+
+
+## Loading Training Data Cleansing data
+
+### Loading and handling NAS
+
+Loading training data ...
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+
+trainingData = read.csv("C:\\Users\\anahitas\\Documents\\coursera\\Practical Machine Learning\\pml-training.csv",na.strings=c("NA",""," "))
+head(trainingData)
+```
+Removing NAs and irrelevant columns in training data ...
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+trainingDataNAs <- apply(trainingData,2,function(x) {sum(is.na(x))})
+trainingDataClean <- trainingData[,which(trainingDataNAs == 0)]
+trainingDataclean <- trainingDataClean[,8:dim(trainingDataClean)[2]]
+
+```
+
+### Spliting training data to training and testing sets ...
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+library(caret); 
+library(kernlab);
+
+inTrain <- createDataPartition(y=trainingDataclean$classe,p=0.75, list = FALSE)
+training <- trainingDataclean[inTrain,]
+testing <- trainingDataclean[-inTrain,]
+```
+### Model Fit
+As per classification use caret gbm package for model fit and cv for cross validation.
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+fitControl <- trainControl(method = "repeatedcv",number=2,repeats=2)
+gbmModelFit <- train(classe~.,data=training,method ="gbm",trControl = fitControl, verbose = FALSE)
+gbmModelFit
+
+```
+
+### Cross Validatin and out of sample error using the testing data
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+
+predModel <-predict(gbmModelFit,testing)
+ConfMatrix <- confusionMatrix(predModel,testing$classe)
+ConfMatrix$table  
+accuracy<-postResample(predModel,testing$classe)[[1]]
+OutSampler<-(1-accuracy)*100
+OutSampler
+```
+
+### Accuracy and application
+Around 96.4% accuracy! Apply to original testingData....
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+
+
+testingData = read.csv("C:\\Users\\anahitas\\Documents\\coursera\\Practical Machine Learning\\pml-testing.csv",na.strings=c("NA",""," "))
+ 
+testingDataNAs <- apply(testingData,2,function(x) {sum(is.na(x))})
+testingDataClean <- testingData[,which(testingDataNAs == 0)]
+testingDataclean <- testingDataClean[,8:dim(testingDataClean)[2]]
+dim(testing)
+```
+
+## Final Prediction
+
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+
+predictModel<-predict(gbmModelFit,testingDataclean)
+predictModel
+
+```
+
+
