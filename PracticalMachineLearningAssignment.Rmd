@@ -98,5 +98,5 @@ predictModel<-predict(gbmModelFit,testingDataclean)
 predictModel
 
 ```
+  
 
-answers = rep("A", 20)
