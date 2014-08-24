@@ -64,7 +64,7 @@ gbmModelFit
 
 ```
 
-### Cross Validatin and out of sample error using the testing data
+### Cross Validation and out of sample error using the testing data
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
 
@@ -99,4 +99,4 @@ predictModel
 
 ```
 
-
+answers = rep("A", 20)
